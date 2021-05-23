@@ -1,8 +1,11 @@
 package utils
 
 import (
+	"bytes"
 	"encoding/json"
 	"io"
+	"io/ioutil"
+	"strings"
 )
 
 func ParseJSONBody(source io.ReadCloser, target interface{}) error {
@@ -25,4 +28,16 @@ func ParseJSONBody(source io.ReadCloser, target interface{}) error {
 	}
 
 	return nil
+}
+
+func ReaderToString(source io.Reader) (string, error) {
+	buf := new(bytes.Buffer)
+	if _, err := buf.ReadFrom(source); err != nil {
+		return "", err
+	}
+	return buf.String(), nil
+}
+
+func StringToReadCloser(source string) io.ReadCloser {
+	return ioutil.NopCloser(strings.NewReader(source))
 }

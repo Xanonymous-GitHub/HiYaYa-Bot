@@ -34,8 +34,15 @@ func fetchConfirmedAmountFromCdc() (string, error) {
 		_ = Body.Close()
 	}(resp.Body)
 
+	// fix "0" key at top level of our response body.
+	bodyString, err := utils.ReaderToString(resp.Body)
+	if err != nil {
+		return "", err
+	}
+	fixBody := utils.StringToReadCloser(bodyString[5 : len(bodyString)-1])
+
 	currentStatus := &CovidCurrentStatus{}
-	err = utils.ParseJSONBody(resp.Body, currentStatus)
+	err = utils.ParseJSONBody(fixBody, currentStatus)
 	if err != nil {
 		return "", err
 	}
