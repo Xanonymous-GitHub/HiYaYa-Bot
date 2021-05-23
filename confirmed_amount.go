@@ -5,8 +5,10 @@ import (
 	"github.com/Xanonymous-GitHub/HiYaYa-Bot/utils"
 	"github.com/line/line-bot-sdk-go/v7/linebot"
 	"io"
+	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 )
 
 const GetConfirmedAmountCmd = "@today"
@@ -22,12 +24,12 @@ type CovidCurrentStatus struct {
 	NewInspection     string `json:"昨日送驗"`
 }
 
-func fetchConfirmedAmountFromCdc() (string, error) {
+func fetchConfirmedAmountFromCdc() (int, error) {
 	const dataSourceUrl = "https://covid19dashboard.cdc.gov.tw/dash3"
 
 	resp, err := http.Get(dataSourceUrl)
 	if err != nil {
-		return "", err
+		return -1, err
 	}
 
 	defer func(Body io.ReadCloser) {
@@ -37,26 +39,46 @@ func fetchConfirmedAmountFromCdc() (string, error) {
 	// fix "0" key at top level of our response body.
 	bodyString, err := utils.ReaderToString(resp.Body)
 	if err != nil {
-		return "", err
+		return -1, err
 	}
 	fixBody := utils.StringToReadCloser(bodyString[5 : len(bodyString)-1])
 
 	currentStatus := &CovidCurrentStatus{}
 	err = utils.ParseJSONBody(fixBody, currentStatus)
 	if err != nil {
-		return "", err
+		return -1, err
 	}
 
-	result := fmt.Sprintf("New confirmed case today in Taiwan: %d", currentStatus.NewConfirmedCase)
-	return result, nil
+	return currentStatus.NewConfirmedCase, nil
+}
+
+func (app *HiYaYaBot) replyPictureFromText(text string) {
+	rapidAPIKey := os.Getenv("RapidApiKey")
+	url := fmt.Sprintf("https://img4me.p.rapidapi.com/?text=%s&type=png&bcolor=FFFFFF&fcolor=000000&size=35&font=trebuchet", text)
+
+	req, _ := http.NewRequest("GET", url, nil)
+
+	req.Header.Add("x-rapidapi-key", rapidAPIKey)
+	req.Header.Add("x-rapidapi-host", "img4me.p.rapidapi.com")
+
+	res, _ := http.DefaultClient.Do(req)
+
+	defer func(Body io.ReadCloser) {
+		_ = Body.Close()
+	}(res.Body)
+	body, _ := ioutil.ReadAll(res.Body)
+
+	app.bot.ReplyMessage(string(body))
 }
 
 func (app *HiYaYaBot) GetConfirmedAmount() *linebot.TextMessage {
-	confirmedAmountMsg, err := fetchConfirmedAmountFromCdc()
+	confirmedAmount, err := fetchConfirmedAmountFromCdc()
 	if err != nil {
 		log.Println(err)
 		return nil
 	}
 
-	return linebot.NewTextMessage(confirmedAmountMsg)
+	result := fmt.Sprintf("New confirmed case today in Taiwan: %d", confirmedAmount)
+	app.replyPictureFromText(string(rune(confirmedAmount)))
+	return linebot.NewTextMessage(result)
 }
