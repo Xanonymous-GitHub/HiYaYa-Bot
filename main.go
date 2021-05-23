@@ -58,6 +58,8 @@ func (app *HiYaYaBot) callbackHandler(w http.ResponseWriter, r *http.Request) {
 					replyMsg = app.GetHelpMsg()
 				case GetBotAuthorProfileCmd:
 					replyMsg = app.GetBotAuthorProfile()
+				case GetConfirmedAmountCmd:
+					replyMsg = app.GetConfirmedAmount()
 				default:
 					replyMsg = app.GetDefaultMsg()
 				}
