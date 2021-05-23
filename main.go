@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"github.com/gofiber/adaptor/v2"
+	"github.com/gofiber/fiber/v2"
 	"github.com/line/line-bot-sdk-go/v7/linebot"
 	"log"
 	"net/http"
@@ -18,10 +20,13 @@ func main() {
 		os.Getenv("ChannelAccessToken"),
 	)
 	log.Println("Bot:", bot, " err:", err)
-	http.HandleFunc("/callback", callbackHandler)
+
+	app := fiber.New()
+	app.Post("/callback", adaptor.HTTPHandlerFunc(callbackHandler))
+
 	port := os.Getenv("PORT")
 	addr := fmt.Sprintf(":%s", port)
-	_ = http.ListenAndServe(addr, nil)
+	_ = app.Listen(addr)
 }
 
 func callbackHandler(w http.ResponseWriter, r *http.Request) {
@@ -44,7 +49,7 @@ func callbackHandler(w http.ResponseWriter, r *http.Request) {
 				if err != nil {
 					log.Println("Quota err:", err)
 				}
-				if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(message.ID+":"+message.Text+" OK! remaining message:"+strconv.FormatInt(quota.Value, 10))).Do(); err != nil {
+				if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(message.ID+":"+message.Text+" OK! remaining message XD:"+strconv.FormatInt(quota.Value, 10))).Do(); err != nil {
 					log.Print(err)
 				}
 			}
