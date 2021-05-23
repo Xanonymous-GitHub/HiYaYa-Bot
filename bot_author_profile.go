@@ -7,21 +7,10 @@ import (
 
 const GetBotAuthorProfileCmd = "@author"
 
-func (app *HiYaYaBot) ShowBotAuthorProfile(event *linebot.Event) error {
+func (app *HiYaYaBot) GetBotAuthorProfile() *linebot.TextMessage {
 	// get github link.
 	profileLink := os.Getenv("BotAuthorProfileLink")
 
 	// create TextMessage.
-	replyMessage := linebot.NewTextMessage(profileLink)
-
-	// create Task.
-	task := app.bot.ReplyMessage(event.ReplyToken, replyMessage)
-
-	// execute the Task.
-	_, err := task.Do()
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return linebot.NewTextMessage(profileLink)
 }

@@ -30,13 +30,8 @@ func NewHiYaYaBot(channelSecret, channelToken, defaultMessage string) (*HiYaYaBo
 	}, nil
 }
 
-func (app *HiYaYaBot) ShowDefaultMsg(event *linebot.Event) error {
-	task := app.bot.ReplyMessage(event.ReplyToken, app.defaultMessage)
-	_, err := task.Do()
-	if err != nil {
-		return err
-	}
-	return nil
+func (app *HiYaYaBot) GetDefaultMsg() *linebot.TextMessage {
+	return app.defaultMessage
 }
 
 func (app *HiYaYaBot) callbackHandler(w http.ResponseWriter, r *http.Request) {
@@ -55,23 +50,24 @@ func (app *HiYaYaBot) callbackHandler(w http.ResponseWriter, r *http.Request) {
 		if event.Type == linebot.EventTypeMessage {
 			switch message := event.Message.(type) {
 			case *linebot.TextMessage:
+
+				var replyMsg *linebot.TextMessage
+
 				switch message.Text {
 				case GetHelpCmd:
-					err := app.ShowHelpMsg(event)
-					if err != nil {
-						log.Println(err)
-					}
+					replyMsg = app.GetHelpMsg()
 				case GetBotAuthorProfileCmd:
-					err := app.ShowBotAuthorProfile(event)
-					if err != nil {
-						log.Println(err)
-					}
+					replyMsg = app.GetBotAuthorProfile()
 				default:
-					err := app.ShowDefaultMsg(event)
-					if err != nil {
-						log.Println(err)
-					}
+					replyMsg = app.GetDefaultMsg()
 				}
+
+				task := app.bot.ReplyMessage(event.ReplyToken, replyMsg)
+				_, err := task.Do()
+				if err != nil {
+					log.Println(err)
+				}
+
 			}
 		}
 	}
