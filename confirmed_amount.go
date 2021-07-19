@@ -14,8 +14,8 @@ import (
 const GetConfirmedAmountCmd = "@today"
 
 type CovidCurrentStatus struct {
-	TotalConfirmed    int    `json:"確診"`
-	ReleaseQuarantine int    `json:"解除隔離"`
+	TotalConfirmed    string `json:"確診"`
+	ReleaseQuarantine string `json:"解除隔離"`
 	TotalDeath        int    `json:"死亡"`
 	TotalInspection   string `json:"送驗"`
 	TotalExclusion    string `json:"排除"`
