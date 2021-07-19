@@ -79,6 +79,6 @@ func (app *HiYaYaBot) GetConfirmedAmount() *linebot.TextMessage {
 	}
 
 	result := fmt.Sprintf("New confirmed case today in Taiwan: %d", confirmedAmount)
-	app.replyPictureFromText(string(rune(confirmedAmount)))
+	//app.replyPictureFromText(string(rune(confirmedAmount)))
 	return linebot.NewTextMessage(result)
 }
